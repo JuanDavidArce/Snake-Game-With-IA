@@ -20,9 +20,8 @@ class Worm:
     def selectDirection(self):
         return choice(self.movingOptions)
 
+
 # COOKIE MODEL
-
-
 class Cookie:
     def __init__(self, position):
         self.position = position
@@ -37,6 +36,7 @@ class Cookie:
 
 # ENVIRONMENT MODEL
 class Environment:
+    # @= head, *= body, $=cookie ,.=map
     def __init__(self, width, height):
         self.square = [['.']*width for i in range(height)]
         self.width = width
@@ -49,8 +49,8 @@ class Environment:
         self.square[pos.y][pos.x] = '.'
 
     def printSquare(self, term):
-        # speed
-        sleep(0.1)
+        # SPEED
+        sleep(0.001)
         print(term.home)
         for row in self.square:
             for column in row:
@@ -96,37 +96,45 @@ def CookieEaten(cookie, worm):
 
 # ENTRY POINT
 def main():
-    # @= head, *= body, $=cookie ,.=map
     # Interface to draw
     term = Terminal()
+
     # initial envirioment
     env = Environment(20, 10)
     worm = Worm(Pto(env.height//2, env.width//2))
     env.newPosition(worm.positionHead, "@")
     cookie = Cookie(Pto(worm.positionHead.y, worm.positionHead.x-2))
     env.newPosition(cookie.position, "$")
+    points=0
     print(term.clear)
 
     # Moving the worm
     while True:
         worm.positionHead, worm.actualDirection = selectPositionHead(worm, env)
+
         if worm.positionHead == Pto(inf, inf):
+            print("YOUR PUNTATION WAS {}".format(points))
             break
+
         if CookieEaten(cookie, worm):
             toAdd = worm.positionHead
             worm.ubications.appendleft(toAdd)
             cookie.generateNewPosition(env.width, env.height, worm.ubications)
             env.newPosition(cookie.position, "$")
+            points+=1
         else:
             toDelete = worm.ubications.pop()
             toAdd = worm.positionHead
             worm.ubications.appendleft(toAdd)
             env.deletePosition(toDelete)
 
-        # update the square
+        # update the body on the osquare
         if len(worm.ubications) > 1:
             env.newPosition(worm.ubications[1], "*")
+
+        # update the head position
         env.newPosition(toAdd, "@")
+
         env.printSquare(term)
 
 
