@@ -26,7 +26,7 @@ class Cookie:
     def __init__(self, position):
         self.position = position
 
-    def generateNewPosition(self, width, height, ubications):
+    def generateNewPosition(self, width:int, height:int, ubications:list)->None:
         while True:
             newPosition = Pto(randint(0, height-1), randint(0, width-1))
             if newPosition not in ubications:
@@ -37,18 +37,18 @@ class Cookie:
 # ENVIRONMENT MODEL
 class Environment:
     # @= head, *= body, $=cookie ,.=map
-    def __init__(self, width, height):
+    def __init__(self, width:int, height:int)->None:
         self.square = [['.']*width for i in range(height)]
         self.width = width
         self.height = height
 
-    def newPosition(self, pos, character):
+    def newPosition(self, pos:tuple, character:str)->None:
         self.square[pos.y][pos.x] = character
 
-    def deletePosition(self, pos):
+    def deletePosition(self, pos:tuple)-> None:
         self.square[pos.y][pos.x] = '.'
 
-    def printSquare(self, term):
+    def printSquare(self, term: Terminal)->None:
         # SPEED
         sleep(0.001)
         print(term.home)
@@ -66,31 +66,31 @@ class Environment:
 
 
 # FUNCTIONS
-def selectPositionHead(worm, env):
-    x = worm.positionHead.x
-    y = worm.positionHead.y
+def selectPositionHead(worm: Worm, env: Environment)->tuple:
+    x:int = worm.positionHead.x
+    y:int = worm.positionHead.y
     direc = worm.actualDirection
     directionsChoosen = set()
     while True:
         direction = worm.selectDirection()
         if direction == 'l' and direc != 'r':
             if x-1 >= 0 and env.square[y][x-1] != '*':
-                return Pto(y, x-1), direction
+                return (Pto(y, x-1), direction)
         if direction == 'r' and direc != 'l':
             if x+1 <= env.width-1 and env.square[y][x+1] != '*':
-                return Pto(y, x+1), direction
+                return (Pto(y, x+1), direction)
         if direction == 'u' and direc != 'd':
             if y-1 >= 0 and env.square[y-1][x] != '*':
-                return Pto(y-1, x), direction
+                return (Pto(y-1, x), direction)
         if direction == 'd' and direc != 'u':
             if y+1 <= env.height-1 and env.square[y+1][x] != '*':
-                return Pto(y+1, x), direction
+                return (Pto(y+1, x), direction)
         directionsChoosen.add(direction)
         if len(directionsChoosen) == 4:
-            return Pto(inf, inf), direction
+            return (Pto(inf, inf), direction)
 
 
-def CookieEaten(cookie, worm):
+def CookieEaten(cookie: Cookie, worm:Worm)->bool:
     return cookie.position == worm.positionHead
 
 
@@ -100,14 +100,16 @@ def main():
     term = Terminal()
 
     # initial envirioment
-    env = Environment(20, 10)
-    worm = Worm(Pto(env.height//2, env.width//2))
+    env: Environment = Environment(20, 10)
+    worm : Worm = Worm(Pto(env.height//2, env.width//2))
     env.newPosition(worm.positionHead, "@")
-    cookie = Cookie(Pto(worm.positionHead.y, worm.positionHead.x-2))
+    cookie : Cookie = Cookie(Pto(worm.positionHead.y, worm.positionHead.x-2))
     env.newPosition(cookie.position, "$")
-    points=0
     print(term.clear)
 
+    #Varibles
+    points: int =0
+    worm.actualDirection:str = 'l'
     # Moving the worm
     while True:
         worm.positionHead, worm.actualDirection = selectPositionHead(worm, env)
@@ -117,14 +119,14 @@ def main():
             break
 
         if CookieEaten(cookie, worm):
-            toAdd = worm.positionHead
+            toAdd : tuple = worm.positionHead
             worm.ubications.appendleft(toAdd)
             cookie.generateNewPosition(env.width, env.height, worm.ubications)
             env.newPosition(cookie.position, "$")
             points+=1
         else:
-            toDelete = worm.ubications.pop()
-            toAdd = worm.positionHead
+            toDelete: tuple = worm.ubications.pop()
+            toAdd :tuple = worm.positionHead
             worm.ubications.appendleft(toAdd)
             env.deletePosition(toDelete)
 
