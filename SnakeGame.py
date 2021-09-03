@@ -3,7 +3,7 @@ from random import choice, randint
 from time import sleep
 from os import system
 from blessed import Terminal
-
+from math import inf
 
 # ALIAS
 Pto = namedtuple('Point', ('y', 'x',))
@@ -48,56 +48,57 @@ class Environment:
     def deletePosition(self, pos):
         self.square[pos.y][pos.x] = '.'
 
-    def printSquare(self,term):
-        #speed
+    def printSquare(self, term):
+        # speed
         sleep(0.1)
         print(term.home)
         for row in self.square:
             for column in row:
-                if column=='.':
-                    print(term.blue_reverse(' '),end='')
-                elif column=='*':
-                    print(term.red_reverse(' '),end='')
-                elif column=='$':
+                if column == '.':
+                    print(term.blue_reverse(' '), end='')
+                elif column == '*':
+                    print(term.red_reverse(' '), end='')
+                elif column == '$':
                     print(term.yellow_reverse(' '), end='')
                 else:
-                    print(term.black_reverse(' '),end='')
+                    print(term.black_reverse(' '), end='')
             print()
-                
-        
+
 
 # FUNCTIONS
 def selectPositionHead(worm, env):
-    x=worm.positionHead.x
-    y=worm.positionHead.y
-    direc=worm.actualDirection
+    x = worm.positionHead.x
+    y = worm.positionHead.y
+    direc = worm.actualDirection
+    directionsChoosen = set()
     while True:
         direction = worm.selectDirection()
         if direction == 'l' and direc != 'r':
             if x-1 >= 0 and env.square[y][x-1] != '*':
-                return Pto(y,x-1), direction
+                return Pto(y, x-1), direction
         if direction == 'r' and direc != 'l':
             if x+1 <= env.width-1 and env.square[y][x+1] != '*':
-                return Pto(y,x+1), direction
+                return Pto(y, x+1), direction
         if direction == 'u' and direc != 'd':
             if y-1 >= 0 and env.square[y-1][x] != '*':
                 return Pto(y-1, x), direction
         if direction == 'd' and direc != 'u':
             if y+1 <= env.height-1 and env.square[y+1][x] != '*':
-                return Pto(y+1,x), direction
+                return Pto(y+1, x), direction
+        directionsChoosen.add(direction)
+        if len(directionsChoosen) == 4:
+            return Pto(inf, inf), direction
 
 
 def CookieEaten(cookie, worm):
     return cookie.position == worm.positionHead
 
 
-
-
 # ENTRY POINT
 def main():
     # @= head, *= body, $=cookie ,.=map
-    #Interface to draw
-    term=Terminal()
+    # Interface to draw
+    term = Terminal()
     # initial envirioment
     env = Environment(20, 10)
     worm = Worm(Pto(env.height//2, env.width//2))
@@ -109,6 +110,8 @@ def main():
     # Moving the worm
     while True:
         worm.positionHead, worm.actualDirection = selectPositionHead(worm, env)
+        if worm.positionHead == Pto(inf, inf):
+            break
         if CookieEaten(cookie, worm):
             toAdd = worm.positionHead
             worm.ubications.appendleft(toAdd)
@@ -125,5 +128,6 @@ def main():
             env.newPosition(worm.ubications[1], "*")
         env.newPosition(toAdd, "@")
         env.printSquare(term)
+
 
 main()
