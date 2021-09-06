@@ -5,6 +5,9 @@ from os import system
 from blessed import Terminal
 from math import inf
 
+# CONSTANT
+SLEEP_TIME=1
+
 # ALIAS
 Pto = namedtuple('Point', ('y', 'x',))
 
@@ -50,7 +53,7 @@ class Environment:
 
     def printSquare(self, term):
         # SPEED
-        sleep(0.001)
+        sleep(SLEEP_TIME)
         print(term.home)
         for row in self.square:
             for column in row:
@@ -98,7 +101,10 @@ def CookieEaten(cookie, worm):
 def main():
     # Interface to draw
     term = Terminal()
-
+    print(term.clear)
+    global SLEEP_TIME
+    SLEEP_TIME=float(input(term.black_on_white('INSERT SPEED OF THE SNAKE RECOMENDED : 0.01-0.5 \n')))
+    print(term.white_on_red('IF YOU CANNOT VISUALIZE CORRECTLY MAKE YOUR TERMINAL BIGGER'));sleep(5)
     # initial envirioment
     env = Environment(20, 10)
     worm = Worm(Pto(env.height//2, env.width//2))
@@ -113,7 +119,7 @@ def main():
         worm.positionHead, worm.actualDirection = selectPositionHead(worm, env)
 
         if worm.positionHead == Pto(inf, inf):
-            print("YOUR PUNTATION WAS {}".format(points))
+            print(term.blue_on_white("YOUR PUNTATION WAS {}".format(points)))
             break
 
         if CookieEaten(cookie, worm):
